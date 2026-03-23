@@ -1,0 +1,17 @@
+{
+  "name": "азкары",
+  "short_name": "азкары",
+  "description": "Утренние и вечерние азкары",
+  "start_url": "/azkar/",
+  "display": "standalone",
+  "background_color": "#0f3d22",
+  "theme_color": "#0f3d22",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
