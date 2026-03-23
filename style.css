@@ -407,3 +407,44 @@ footer {
   padding: 60px 0;
   font-size: 0.9rem;
 }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  header {
+    padding: 0 14px;
+    height: 56px;
+  }
+
+  .logo-text {
+    font-size: 0.95rem;
+  }
+
+  .tab {
+    padding: 4px 10px;
+    font-size: 0.9rem;
+  }
+
+  main {
+    padding: 16px 12px 60px;
+    gap: 10px;
+  }
+
+  .card {
+    padding: 16px 16px;
+    border-radius: 12px;
+  }
+
+  .arabic {
+    font-size: 1.15rem;
+    line-height: 2;
+  }
+
+  .counter-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+
+  .note {
+    font-size: 0.78rem;
+  }
+}
