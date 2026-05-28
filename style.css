@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap');
 
 * {
   margin: 0;
@@ -106,9 +106,49 @@ header {
   font-weight: 400;
 }
 
+/* ── Progress bar ── */
+.progress-bar {
+  position: sticky;
+  top: 64px;
+  z-index: 9;
+  background: #0f3d22;
+  padding: 10px 20px 8px;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.progress-bar-inner {
+  height: 4px;
+  background: #122b22;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1a7a55, #0fa86e);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.progress-bar-text {
+  font-size: 0.72rem;
+  color: #4d8a70;
+  margin-top: 5px;
+  text-align: center;
+  transition: color 0.3s;
+}
+
+.progress-bar-text.all-done {
+  color: #0fa86e;
+  font-weight: 600;
+}
+
 /* ── Layout ── */
 main {
-  padding: 24px 20px 60px;
+  padding: 12px 20px 60px;
   max-width: 700px;
   margin: 0 auto;
   display: flex;
@@ -122,7 +162,10 @@ main {
   border: 1px solid #122b22;
   border-radius: 14px;
   padding: 22px 24px;
-  transition: border-color 0.2s, opacity 0.2s;
+  transition: border-color 0.2s, opacity 0.3s, transform 0.3s;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cardIn 0.4s ease forwards;
 }
 
 .card:hover {
@@ -132,6 +175,23 @@ main {
 .card.done {
   border-color: #1a4d35;
   opacity: 0.55;
+}
+
+.card.just-done {
+  animation: cardComplete 0.5s ease;
+}
+
+@keyframes cardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardComplete {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.015); border-color: #0fa86e; }
+  100% { transform: scale(1); }
 }
 
 /* ── Card number ── */
@@ -293,11 +353,16 @@ main {
   color: #071612;
 }
 
+.counter-btn:active {
+  transform: scale(0.95);
+}
+
 .counter-btn:disabled {
   border-color: #1a4d35;
   color: #1a4d35;
   cursor: default;
   background: transparent;
+  transform: none;
 }
 
 .done-badge {
@@ -310,6 +375,47 @@ main {
   display: inline;
 }
 
+/* ── Celebration overlay ── */
+.celebration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.confetti {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: confettiFall 1.8s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(60vh) rotate(720deg) scale(0.3);
+  }
+}
+
+/* ── Tab transition ── */
+main.fade-out {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+main.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
 /* ── Light theme ── */
 body[data-theme="light"] {
   background: #f4f9f7;
@@ -319,6 +425,14 @@ body[data-theme="light"] {
 body[data-theme="light"] header {
   background: #ffffff;
   border-bottom-color: #d8ede6;
+}
+
+body[data-theme="light"] .progress-bar {
+  background: #f4f9f7;
+}
+
+body[data-theme="light"] .progress-bar-inner {
+  background: #d8ede6;
 }
 
 body[data-theme="light"] .tabs {
@@ -415,6 +529,11 @@ footer {
     height: 56px;
   }
 
+  .progress-bar {
+    top: 56px;
+    padding: 8px 14px 6px;
+  }
+
   .logo-text {
     font-size: 0.95rem;
   }
@@ -425,7 +544,7 @@ footer {
   }
 
   main {
-    padding: 16px 12px 60px;
+    padding: 8px 12px 60px;
     gap: 10px;
   }
 

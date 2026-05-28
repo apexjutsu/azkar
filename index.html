@@ -4,35 +4,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>азкары</title>
+  <meta name="description" content="Утренние и вечерние азкары с счётчиком повторений" />
+  <meta property="og:title" content="азкары" />
+  <meta property="og:description" content="Утренние и вечерние азкары с счётчиком повторений" />
+  <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.png" />
   <meta name="theme-color" content="#0f3d22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="азкары" />
-  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=13" />
 </head>
 <body>
 
   <header>
     <div class="logo">
-      <div class="logo-icon">☽</div>
+      <div class="logo-icon">&#9789;</div>
       <span class="logo-text">азкары</span>
     </div>
     <div class="header-right">
-      <div class="tabs">
-        <button class="tab active" data-tab="morning">утром</button>
-        <button class="tab" data-tab="evening">вечером</button>
+      <div class="tabs" role="tablist" aria-label="Время суток">
+        <button class="tab active" data-tab="morning" role="tab" aria-selected="true" aria-controls="azkar-list">утром</button>
+        <button class="tab" data-tab="evening" role="tab" aria-selected="false" aria-controls="azkar-list">вечером</button>
       </div>
-      <button id="theme-toggle" onclick="toggleTheme()" title="сменить тему">☀</button>
+      <button id="theme-toggle" onclick="toggleTheme()" title="сменить тему" aria-label="Сменить тему">&#9728;</button>
     </div>
   </header>
 
-  <main id="azkar-list"></main>
+  <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="progress-bar-inner">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-bar-text" id="progress-text"></div>
+  </div>
+
+  <main id="azkar-list" role="tabpanel"></main>
+
+  <div id="celebration" class="celebration" aria-hidden="true"></div>
 
   <footer>апекс &copy;&nbsp;2026</footer>
 
   <script src="data.js?v=6"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
