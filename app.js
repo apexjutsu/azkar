@@ -58,7 +58,7 @@ function updateOverallProgress() {
     if (item.count) {
       if ((progress[item.id] || 0) >= item.count.required) done++;
     } else {
-      done++;
+      if (progress[item.id]) done++;
     }
   });
 
@@ -114,7 +114,10 @@ function scrollToNextUncompleted(completedId) {
   for (const item of items) {
     if (item.id === completedId) { foundCurrent = true; continue; }
     if (!foundCurrent) continue;
-    if (item.count && (progress[item.id] || 0) < item.count.required) {
+    const undone = item.count
+      ? (progress[item.id] || 0) < item.count.required
+      : !progress[item.id];
+    if (undone) {
       const el = document.getElementById('card-' + item.id);
       if (el) {
         setTimeout(() => {
@@ -135,7 +138,7 @@ function renderAzkar(tab) {
 
   items.forEach((item, index) => {
     const saved = progress[item.id] || 0;
-    const isDone = item.count ? saved >= item.count.required : false;
+    const isDone = item.count ? saved >= item.count.required : !!saved;
 
     const card = document.createElement('div');
     card.className = 'card' + (isDone ? ' done' : '') + (item.theme === 'light' ? ' card-light' : '');
@@ -170,6 +173,18 @@ function renderAzkar(tab) {
       `;
     }
 
+    let readHTML = '';
+    if (!item.count) {
+      readHTML = `
+        <hr class="divider" />
+        <div class="read-row">
+          <button class="read-btn${isDone ? ' read-done' : ''}" id="read-${item.id}" onclick="toggleRead('${item.id}')" aria-pressed="${isDone}">
+            ${isDone ? '✓ прочитано' : 'отметить прочитанным'}
+          </button>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
       <div class="card-number">${index + 1} / ${items.length}</div>
       ${item.note ? `<div class="note">${item.note}</div>` : ''}
@@ -177,7 +192,7 @@ function renderAzkar(tab) {
       ${item.transliteration ? `<div class="transliteration">${item.transliteration}</div><hr class="divider" />` : ''}
       <div class="translation">${item.translation}</div>
       ${item.source ? `<div class="source">${item.source}</div>` : ''}
-      ${counterHTML}
+      ${counterHTML}${readHTML}
     `;
 
     list.appendChild(card);
@@ -239,6 +254,40 @@ function resetCounter(id, required) {
   if (cardEl) cardEl.classList.remove('done');
 
   updateOverallProgress();
+}
+
+function toggleRead(id) {
+  const progress = loadProgress();
+  const nowDone = !progress[id];
+  if (nowDone) {
+    progress[id] = 1;
+  } else {
+    delete progress[id];
+  }
+  saveProgress(progress);
+
+  vibrate(nowDone ? [30, 20, 30] : 15);
+
+  const btnEl = document.getElementById('read-' + id);
+  const cardEl = document.getElementById('card-' + id);
+
+  if (btnEl) {
+    btnEl.textContent = nowDone ? '✓ прочитано' : 'отметить прочитанным';
+    btnEl.classList.toggle('read-done', nowDone);
+    btnEl.setAttribute('aria-pressed', String(nowDone));
+  }
+  if (cardEl) {
+    cardEl.classList.toggle('done', nowDone);
+    if (nowDone) {
+      cardEl.classList.add('just-done');
+      setTimeout(() => cardEl.classList.remove('just-done'), 500);
+    }
+  }
+
+  if (nowDone) scrollToNextUncompleted(id);
+
+  const { done, total } = updateOverallProgress();
+  if (nowDone && done === total) showCelebration();
 }
 
 document.querySelectorAll('.tab').forEach(btn => {

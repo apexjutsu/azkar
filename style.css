@@ -375,6 +375,41 @@ main {
   display: inline;
 }
 
+/* ── Read button (no-counter azkar) ── */
+.read-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.read-btn {
+  padding: 7px 18px;
+  border-radius: 8px;
+  border: 1px solid #0fa86e;
+  background: transparent;
+  color: #0fa86e;
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.read-btn:hover {
+  background: #0fa86e;
+  color: #071612;
+}
+
+.read-btn:active {
+  transform: scale(0.95);
+}
+
+.read-btn.read-done {
+  border-color: #1a4d35;
+  background: rgba(15, 168, 110, 0.08);
+  cursor: pointer;
+}
+
 /* ── Celebration overlay ── */
 .celebration {
   position: fixed;
