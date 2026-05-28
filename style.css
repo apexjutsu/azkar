@@ -6,6 +6,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   font-family: 'Inter', 'Segoe UI', sans-serif;
   background: #0f3d22;
@@ -236,7 +240,7 @@ main {
 
 /* ── Arabic ── */
 .arabic {
-  font-size: 1.35rem;
+  font-size: calc(1.35rem * var(--arabic-scale, 1));
   text-align: right;
   line-height: 2.1;
   color: #ffffff;
@@ -589,7 +593,7 @@ footer {
   }
 
   .arabic {
-    font-size: 1.15rem;
+    font-size: calc(1.15rem * var(--arabic-scale, 1));
     line-height: 2;
   }
 
@@ -600,5 +604,331 @@ footer {
 
   .note {
     font-size: 0.78rem;
+  }
+}
+
+/* ── Hide transliteration ── */
+body.hide-translit .transliteration,
+body.hide-translit .transliteration + .divider {
+  display: none;
+}
+
+/* ── Streak ── */
+.streak {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f5b342;
+  padding: 2px 6px;
+  border-radius: 7px;
+  user-select: none;
+}
+
+.streak-flame {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.streak.bump {
+  animation: streakBump 0.5s ease;
+}
+
+@keyframes streakBump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* ── Settings button ── */
+#settings-toggle {
+  background: none;
+  border: none;
+  color: #6b9e88;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 7px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+#settings-toggle:hover {
+  color: #0fa86e;
+}
+
+/* ── Settings panel ── */
+.settings-panel {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  z-index: 50;
+  width: 250px;
+  background: #0c211a;
+  border: 1px solid #1e4d3a;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: panelIn 0.16s ease;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 8px;
+}
+
+.settings-label {
+  font-size: 0.85rem;
+  color: #a8d5c0;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.size-btn {
+  background: transparent;
+  border: 1px solid #1e4d3a;
+  color: #0fa86e;
+  border-radius: 6px;
+  width: 30px;
+  height: 28px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+
+.size-btn:hover {
+  background: #0fa86e;
+  color: #071612;
+}
+
+.size-btn:active {
+  transform: scale(0.94);
+}
+
+.size-val {
+  font-size: 0.8rem;
+  color: #0fa86e;
+  min-width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.switch {
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: #1e4d3a;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.switch[aria-checked="true"] {
+  background: #0fa86e;
+}
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.switch[aria-checked="true"] .switch-knob {
+  transform: translateX(18px);
+}
+
+/* ── Completion screen ── */
+.completion-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 20, 14, 0.72);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: fadeInOverlay 0.25s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.completion-card {
+  background: #0c211a;
+  border: 1px solid #1a7a55;
+  border-radius: 18px;
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.completion-check {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a7a55, #0fa86e);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.completion-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.completion-sub {
+  font-size: 0.9rem;
+  color: #8eb8a4;
+  margin-bottom: 8px;
+}
+
+.completion-streak {
+  font-size: 0.95rem;
+  color: #f5b342;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.completion-close {
+  padding: 9px 26px;
+  border-radius: 8px;
+  border: 1px solid #0fa86e;
+  background: transparent;
+  color: #0fa86e;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.completion-close:hover {
+  background: #0fa86e;
+  color: #071612;
+}
+
+/* ── Light theme: new components ── */
+body[data-theme="light"] #settings-toggle {
+  color: #3d7a60;
+}
+
+body[data-theme="light"] .settings-panel {
+  background: #ffffff;
+  border-color: #d8ede6;
+  box-shadow: 0 10px 34px rgba(13, 46, 34, 0.14);
+}
+
+body[data-theme="light"] .settings-label {
+  color: #3d6b5a;
+}
+
+body[data-theme="light"] .size-btn {
+  border-color: #cfe6dd;
+}
+
+body[data-theme="light"] .size-btn:hover {
+  color: #ffffff;
+}
+
+body[data-theme="light"] .switch {
+  background: #cfe6dd;
+}
+
+body[data-theme="light"] .switch[aria-checked="true"] {
+  background: #0fa86e;
+}
+
+body[data-theme="light"] .completion-screen {
+  background: rgba(20, 60, 44, 0.42);
+}
+
+body[data-theme="light"] .completion-card {
+  background: #ffffff;
+  border-color: #a0cfc0;
+}
+
+body[data-theme="light"] .completion-title {
+  color: #0a2e22;
+}
+
+body[data-theme="light"] .completion-sub {
+  color: #3d6b5a;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Mobile: new components ── */
+@media (max-width: 480px) {
+  .header-right {
+    gap: 6px;
+  }
+
+  .streak {
+    font-size: 0.85rem;
+    padding: 2px 4px;
+  }
+
+  .settings-panel {
+    top: 52px;
+    right: 8px;
+    left: 8px;
+    width: auto;
   }
 }

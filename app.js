@@ -1,4 +1,16 @@
-let currentTab = 'morning';
+const EVENING_START_HOUR = 15;
+const STREAK_KEY = 'azkar_streak';
+const SETTINGS_KEY = 'azkar_settings';
+const ARABIC_SCALE_MIN = 0.8;
+const ARABIC_SCALE_MAX = 1.8;
+const ARABIC_SCALE_STEP = 0.1;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function initialTab() {
+  return new Date().getHours() >= EVENING_START_HOUR ? 'evening' : 'morning';
+}
+
+let currentTab = initialTab();
 
 function initTheme() {
   const saved = localStorage.getItem('theme') || 'dark';
@@ -48,6 +60,187 @@ function vibrate(ms) {
   if (navigator.vibrate) navigator.vibrate(ms);
 }
 
+/* ── Settings: Arabic font size + transliteration ── */
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveSettings(s) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+function applyArabicSize(scale) {
+  document.documentElement.style.setProperty('--arabic-scale', scale);
+  const val = document.getElementById('arabic-size-val');
+  if (val) val.textContent = Math.round(scale * 100) + '%';
+}
+
+function changeArabicSize(dir) {
+  const s = loadSettings();
+  let scale = s.arabicScale || 1;
+  scale = Math.round((scale + dir * ARABIC_SCALE_STEP) * 10) / 10;
+  scale = Math.min(ARABIC_SCALE_MAX, Math.max(ARABIC_SCALE_MIN, scale));
+  s.arabicScale = scale;
+  saveSettings(s);
+  applyArabicSize(scale);
+}
+
+function applyTranslit(hidden) {
+  document.body.classList.toggle('hide-translit', hidden);
+  const btn = document.getElementById('translit-toggle');
+  if (btn) btn.setAttribute('aria-checked', String(!hidden));
+}
+
+function toggleTranslit() {
+  const s = loadSettings();
+  const nowHidden = !s.hideTranslit;
+  s.hideTranslit = nowHidden;
+  saveSettings(s);
+  applyTranslit(nowHidden);
+}
+
+function initSettings() {
+  const s = loadSettings();
+  applyArabicSize(s.arabicScale || 1);
+  applyTranslit(!!s.hideTranslit);
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  const btn = document.getElementById('settings-toggle');
+  if (!panel) return;
+  if (panel.hasAttribute('hidden')) {
+    panel.removeAttribute('hidden');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+  } else {
+    closeSettings();
+  }
+}
+
+function closeSettings() {
+  const panel = document.getElementById('settings-panel');
+  const btn = document.getElementById('settings-toggle');
+  if (panel && !panel.hasAttribute('hidden')) {
+    panel.setAttribute('hidden', '');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+}
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('settings-panel');
+  const btn = document.getElementById('settings-toggle');
+  if (!panel || panel.hasAttribute('hidden')) return;
+  if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+  closeSettings();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSettings();
+});
+
+/* ── Streak: consecutive days with a completed set ── */
+function utcDateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function yesterdayStr() {
+  return utcDateStr(new Date(Date.now() - 86400000));
+}
+
+function loadStreak() {
+  try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { current: 0, best: 0, last: null }; }
+  catch { return { current: 0, best: 0, last: null }; }
+}
+
+function saveStreak(s) {
+  localStorage.setItem(STREAK_KEY, JSON.stringify(s));
+}
+
+function displayStreak() {
+  const s = loadStreak();
+  const today = getTodayStr();
+  if (s.last === today || s.last === yesterdayStr()) return s.current || 0;
+  return 0;
+}
+
+function recordDayCompletion() {
+  const s = loadStreak();
+  const today = getTodayStr();
+  if (s.last === today) return false;
+  s.current = (s.last === yesterdayStr()) ? (s.current || 0) + 1 : 1;
+  s.last = today;
+  s.best = Math.max(s.best || 0, s.current);
+  saveStreak(s);
+  return true;
+}
+
+function dayWord(n) {
+  const d10 = n % 10, d100 = n % 100;
+  if (d10 === 1 && d100 !== 11) return 'день';
+  if (d10 >= 2 && d10 <= 4 && (d100 < 10 || d100 >= 20)) return 'дня';
+  return 'дней';
+}
+
+function renderStreak(bump) {
+  const el = document.getElementById('streak');
+  const countEl = document.getElementById('streak-count');
+  if (!el || !countEl) return;
+  const n = displayStreak();
+  if (n >= 1) {
+    countEl.textContent = n;
+    el.hidden = false;
+    el.setAttribute('title', n + ' ' + dayWord(n) + ' подряд');
+    if (bump && !reduceMotion) {
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
+    }
+  } else {
+    el.hidden = true;
+  }
+}
+
+/* ── Completion screen ── */
+function showCompletion() {
+  const screen = document.getElementById('completion-screen');
+  if (!screen) return;
+  const streakLine = document.getElementById('completion-streak');
+  const n = displayStreak();
+  if (streakLine) {
+    if (n >= 1) {
+      streakLine.textContent = '\u{1F525} ' + n + ' ' + dayWord(n) + ' подряд';
+      streakLine.hidden = false;
+    } else {
+      streakLine.hidden = true;
+    }
+  }
+  screen.hidden = false;
+  screen.setAttribute('aria-hidden', 'false');
+}
+
+function hideCompletion() {
+  const screen = document.getElementById('completion-screen');
+  if (!screen) return;
+  screen.hidden = true;
+  screen.setAttribute('aria-hidden', 'true');
+}
+
+function handleSetCompleted() {
+  const newStreak = recordDayCompletion();
+  renderStreak(newStreak);
+  showCelebration();
+  setTimeout(showCompletion, reduceMotion ? 0 : 350);
+}
+
+function syncTabUI() {
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = t.dataset.tab === currentTab;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', String(on));
+  });
+}
+
 function updateOverallProgress() {
   const items = azkar[currentTab];
   const progress = loadProgress();
@@ -84,6 +277,9 @@ function updateOverallProgress() {
 }
 
 function showCelebration() {
+  vibrate([50, 30, 50]);
+  if (reduceMotion) return;
+
   const container = document.getElementById('celebration');
   if (!container) return;
   container.innerHTML = '';
@@ -100,8 +296,6 @@ function showCelebration() {
     dot.style.height = dot.style.width;
     container.appendChild(dot);
   }
-
-  vibrate([50, 30, 50]);
 
   setTimeout(() => { container.innerHTML = ''; }, 2500);
 }
@@ -121,7 +315,7 @@ function scrollToNextUncompleted(completedId) {
       const el = document.getElementById('card-' + item.id);
       if (el) {
         setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
         }, 400);
       }
       return;
@@ -230,7 +424,7 @@ function increment(id, required) {
     scrollToNextUncompleted(id);
 
     const { done, total } = updateOverallProgress();
-    if (done === total) showCelebration();
+    if (done === total) handleSetCompleted();
   } else {
     updateOverallProgress();
   }
@@ -287,7 +481,7 @@ function toggleRead(id) {
   if (nowDone) scrollToNextUncompleted(id);
 
   const { done, total } = updateOverallProgress();
-  if (nowDone && done === total) showCelebration();
+  if (nowDone && done === total) handleSetCompleted();
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
@@ -310,10 +504,13 @@ document.querySelectorAll('.tab').forEach(btn => {
       list.classList.remove('fade-out');
       list.classList.add('fade-in');
       list.scrollTop = 0;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
       setTimeout(() => list.classList.remove('fade-in'), 250);
     }, 150);
   });
 });
 
+initSettings();
+syncTabUI();
+renderStreak(false);
 renderAzkar(currentTab);

@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=14" />
+  <link rel="stylesheet" href="style.css?v=15" />
 </head>
 <body>
 
@@ -31,9 +31,30 @@
         <button class="tab active" data-tab="morning" role="tab" aria-selected="true" aria-controls="azkar-list">утром</button>
         <button class="tab" data-tab="evening" role="tab" aria-selected="false" aria-controls="azkar-list">вечером</button>
       </div>
+      <div id="streak" class="streak" hidden title="дней подряд">
+        <span class="streak-flame">&#128293;</span><span id="streak-count">0</span>
+      </div>
+      <button id="settings-toggle" onclick="toggleSettings()" title="настройки" aria-label="Настройки" aria-expanded="false" aria-haspopup="true">&#9881;</button>
       <button id="theme-toggle" onclick="toggleTheme()" title="сменить тему" aria-label="Сменить тему">&#9728;</button>
     </div>
   </header>
+
+  <div id="settings-panel" class="settings-panel" hidden role="dialog" aria-label="Настройки">
+    <div class="settings-row">
+      <span class="settings-label">размер арабского</span>
+      <div class="settings-control">
+        <button class="size-btn" onclick="changeArabicSize(-1)" aria-label="Уменьшить шрифт">A&minus;</button>
+        <span id="arabic-size-val" class="size-val">100%</span>
+        <button class="size-btn" onclick="changeArabicSize(1)" aria-label="Увеличить шрифт">A+</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">транслитерация</span>
+      <button id="translit-toggle" class="switch" role="switch" aria-checked="true" onclick="toggleTranslit()" aria-label="Показывать транслитерацию">
+        <span class="switch-knob"></span>
+      </button>
+    </div>
+  </div>
 
   <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
     <div class="progress-bar-inner">
@@ -46,10 +67,20 @@
 
   <div id="celebration" class="celebration" aria-hidden="true"></div>
 
+  <div id="completion-screen" class="completion-screen" hidden aria-hidden="true" onclick="if(event.target===this)hideCompletion()">
+    <div class="completion-card" role="dialog" aria-modal="true" aria-label="Все азкары выполнены">
+      <div class="completion-check">&#10003;</div>
+      <div class="completion-title">ма ша Аллах</div>
+      <div class="completion-sub">все азкары выполнены</div>
+      <div class="completion-streak" id="completion-streak" hidden></div>
+      <button class="completion-close" onclick="hideCompletion()">закрыть</button>
+    </div>
+  </div>
+
   <footer>апекс &copy;&nbsp;2026</footer>
 
   <script src="data.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
