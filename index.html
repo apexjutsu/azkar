@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=15" />
+  <link rel="stylesheet" href="style.css?v=16" />
 </head>
 <body>
 
@@ -28,8 +28,8 @@
     </div>
     <div class="header-right">
       <div class="tabs" role="tablist" aria-label="Время суток">
-        <button class="tab active" data-tab="morning" role="tab" aria-selected="true" aria-controls="azkar-list">утром</button>
-        <button class="tab" data-tab="evening" role="tab" aria-selected="false" aria-controls="azkar-list">вечером</button>
+        <button class="tab active" data-tab="morning" role="tab" aria-selected="true" aria-controls="deck">утром</button>
+        <button class="tab" data-tab="evening" role="tab" aria-selected="false" aria-controls="deck">вечером</button>
       </div>
       <div id="streak" class="streak" hidden title="дней подряд">
         <span class="streak-flame">&#128293;</span><span id="streak-count">0</span>
@@ -63,7 +63,16 @@
     <div class="progress-bar-text" id="progress-text"></div>
   </div>
 
-  <main id="azkar-list" role="tabpanel"></main>
+  <main id="deck" class="deck" role="tabpanel">
+    <div id="deck-stack" class="deck-stack" data-stack="0"></div>
+  </main>
+
+  <div class="deck-nav">
+    <button id="prev-btn" class="nav-btn" onclick="goPrev()" aria-label="Назад" disabled>&#8249;</button>
+    <div id="deck-pos" class="deck-pos" aria-live="polite">1 / 1</div>
+    <button id="next-btn" class="nav-btn" onclick="goNext()" aria-label="Дальше">&#8250;</button>
+  </div>
+  <div class="swipe-hint">листайте свайпом или стрелками</div>
 
   <div id="celebration" class="celebration" aria-hidden="true"></div>
 
@@ -80,7 +89,7 @@
   <footer>апекс &copy;&nbsp;2026</footer>
 
   <script src="data.js?v=6"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');

@@ -182,6 +182,13 @@ function dayWord(n) {
   return 'дней';
 }
 
+function zikrWord(n) {
+  const d10 = n % 10, d100 = n % 100;
+  if (d10 === 1 && d100 !== 11) return 'азкар';
+  if (d10 >= 2 && d10 <= 4 && (d100 < 10 || d100 >= 20)) return 'азкара';
+  return 'азкаров';
+}
+
 function renderStreak(bump) {
   const el = document.getElementById('streak');
   const countEl = document.getElementById('streak-count');
@@ -241,21 +248,24 @@ function syncTabUI() {
   });
 }
 
-function updateOverallProgress() {
+/* ── Progress ── */
+function computeProgress() {
   const items = azkar[currentTab];
   const progress = loadProgress();
   let done = 0;
-  let total = items.length;
-
   items.forEach(item => {
     if (item.count) {
       if ((progress[item.id] || 0) >= item.count.required) done++;
-    } else {
-      if (progress[item.id]) done++;
+    } else if (progress[item.id]) {
+      done++;
     }
   });
+  return { done, total: items.length };
+}
 
-  const pct = Math.round((done / total) * 100);
+function updateOverallProgress() {
+  const { done, total } = computeProgress();
+  const pct = total ? Math.round((done / total) * 100) : 0;
   const fillEl = document.getElementById('progress-fill');
   const textEl = document.getElementById('progress-text');
   const barEl = document.getElementById('progress-bar');
@@ -300,99 +310,246 @@ function showCelebration() {
   setTimeout(() => { container.innerHTML = ''; }, 2500);
 }
 
-function scrollToNextUncompleted(completedId) {
+/* ── Swipe deck ── */
+const SWIPE_THRESHOLD = 70;
+let currentIndex = 0;
+let drag = null;
+
+function firstUndoneIndex() {
   const items = azkar[currentTab];
   const progress = loadProgress();
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    const undone = it.count ? (progress[it.id] || 0) < it.count.required : !progress[it.id];
+    if (undone) return i;
+  }
+  return items.length;
+}
 
-  let foundCurrent = false;
-  for (const item of items) {
-    if (item.id === completedId) { foundCurrent = true; continue; }
-    if (!foundCurrent) continue;
-    const undone = item.count
-      ? (progress[item.id] || 0) < item.count.required
-      : !progress[item.id];
-    if (undone) {
-      const el = document.getElementById('card-' + item.id);
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
-        }, 400);
-      }
-      return;
-    }
+function startIndex() {
+  return firstUndoneIndex();
+}
+
+function cardInnerHTML(item) {
+  const progress = loadProgress();
+  const saved = progress[item.id] || 0;
+  const isDone = item.count ? saved >= item.count.required : !!saved;
+
+  let actionHTML = '';
+  if (item.count) {
+    const required = item.count.required;
+    const pct = Math.min(100, Math.round((saved / required) * 100));
+    actionHTML = `
+      <hr class="divider" />
+      <div class="counter-wrap">
+        <div class="counter-progress-bar">
+          <div class="counter-progress-fill" id="fill-${item.id}" style="width:${pct}%"></div>
+        </div>
+        <div class="counter-row">
+          <div class="counter-display">
+            <span id="cur-${item.id}">${saved}</span> / ${required}
+            <span class="done-badge" id="badge-${item.id}"${isDone ? ' style="display:inline"' : ''}> ✓ выполнено</span>
+          </div>
+          <button class="counter-reset" onclick="resetCounter('${item.id}', ${required})" aria-label="Сбросить счётчик">сброс</button>
+        </div>
+        <button class="counter-btn-big" id="btn-${item.id}" onclick="increment('${item.id}', ${required})"${isDone ? ' disabled' : ''} aria-label="Добавить повторение">+ зикр</button>
+        <div class="swipe-next-hint" id="hint-${item.id}"${isDone ? '' : ' hidden'}>готово ✓ — листай вправо →</div>
+      </div>`;
+  } else {
+    actionHTML = `
+      <hr class="divider" />
+      <button class="read-next-btn${isDone ? ' is-read' : ''}" onclick="goNext()" aria-label="Прочитано, следующий">
+        ${isDone ? '✓ прочитано — дальше' : 'прочитано — дальше →'}
+      </button>`;
+  }
+
+  return `
+    ${item.note ? `<div class="note">${item.note}</div>` : ''}
+    <div class="arabic">${item.arabic.replace(/\n/g, '<br>')}</div>
+    ${item.transliteration ? `<div class="transliteration">${item.transliteration}</div><hr class="divider" />` : ''}
+    <div class="translation">${item.translation}</div>
+    ${item.source ? `<div class="source">${item.source}</div>` : ''}
+    ${actionHTML}`;
+}
+
+function endCardHTML() {
+  const { done, total } = computeProgress();
+  const allDone = done === total;
+  const n = displayStreak();
+
+  if (allDone) {
+    const streakHTML = n >= 1
+      ? `<div class="end-streak">${'\u{1F525}'} ${n} ${dayWord(n)} подряд</div>`
+      : '';
+    return `<div class="card swipe-card end-card">
+      <div class="end-icon">✓</div>
+      <div class="end-title">ма ша Аллах</div>
+      <div class="end-sub">все азкары выполнены</div>
+      ${streakHTML}
+      <div class="end-actions">
+        <button class="end-btn end-btn-secondary" onclick="restartDeck()">пройти заново</button>
+      </div>
+    </div>`;
+  }
+
+  const left = total - done;
+  return `<div class="card swipe-card end-card">
+    <div class="end-icon end-icon-muted">•••</div>
+    <div class="end-title">почти готово</div>
+    <div class="end-sub">осталось ${left} ${zikrWord(left)}</div>
+    <div class="end-actions">
+      <button class="end-btn" onclick="goToFirstUndone()">к незавершённым</button>
+      <button class="end-btn end-btn-secondary" onclick="restartDeck()">в начало</button>
+    </div>
+  </div>`;
+}
+
+function updateNav(index, total) {
+  const pos = document.getElementById('deck-pos');
+  const prev = document.getElementById('prev-btn');
+  const next = document.getElementById('next-btn');
+  const stack = document.getElementById('deck-stack');
+  if (pos) pos.textContent = index >= total ? 'готово' : (index + 1) + ' / ' + total;
+  if (prev) prev.disabled = index <= 0;
+  if (next) next.disabled = index >= total;
+  if (stack) stack.dataset.stack = String(Math.max(0, Math.min(2, total - index - 1)));
+}
+
+function renderCard(index) {
+  const items = azkar[currentTab];
+  const stack = document.getElementById('deck-stack');
+  if (!stack) return;
+
+  updateNav(index, items.length);
+  updateOverallProgress();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+
+  if (index >= items.length) {
+    stack.innerHTML = endCardHTML();
+    const endEl = stack.firstElementChild;
+    if (endEl) attachDrag(endEl);
+    return;
+  }
+
+  const item = items[index];
+  const card = document.createElement('div');
+  card.className = 'card swipe-card' + (item.theme === 'light' ? ' card-light' : '');
+  card.id = 'card-' + item.id;
+  card.innerHTML = cardInnerHTML(item);
+  stack.innerHTML = '';
+  stack.appendChild(card);
+  attachDrag(card);
+}
+
+function markReadIfNeeded(item) {
+  if (!item || item.count) return;
+  const progress = loadProgress();
+  if (progress[item.id]) return;
+  progress[item.id] = 1;
+  saveProgress(progress);
+  vibrate([30, 20, 30]);
+  const { done, total } = updateOverallProgress();
+  if (done === total) handleSetCompleted();
+}
+
+function goNext() {
+  const items = azkar[currentTab];
+  if (currentIndex >= items.length) return;
+  markReadIfNeeded(items[currentIndex]);
+  animateOut('right', () => {
+    currentIndex = Math.min(items.length, currentIndex + 1);
+    renderCard(currentIndex);
+  });
+}
+
+function goPrev() {
+  if (currentIndex <= 0) return;
+  animateOut('left', () => {
+    currentIndex = Math.max(0, currentIndex - 1);
+    renderCard(currentIndex);
+  });
+}
+
+function goToFirstUndone() {
+  currentIndex = firstUndoneIndex();
+  renderCard(currentIndex);
+}
+
+function restartDeck() {
+  currentIndex = 0;
+  renderCard(currentIndex);
+}
+
+function animateOut(dir, cb) {
+  const el = document.querySelector('.swipe-card');
+  let ran = false;
+  const run = () => { if (ran) return; ran = true; cb(); };
+  if (!el || reduceMotion) { run(); return; }
+  el.classList.add('animating');
+  requestAnimationFrame(() => {
+    el.style.transform = dir === 'right'
+      ? 'translateX(120%) rotate(10deg)'
+      : 'translateX(-120%) rotate(-10deg)';
+    el.style.opacity = '0';
+  });
+  el.addEventListener('transitionend', run, { once: true });
+  setTimeout(run, 380);
+}
+
+function snapBack(el) {
+  if (!el) return;
+  el.classList.add('animating');
+  el.style.transform = '';
+  el.style.opacity = '';
+}
+
+function attachDrag(card) {
+  card.addEventListener('pointerdown', onPointerDown);
+}
+
+function onPointerDown(e) {
+  if (e.button != null && e.button !== 0) return;
+  if (e.target.closest('button, a')) return;
+  const card = e.currentTarget;
+  drag = { startX: e.clientX, startY: e.clientY, dx: 0, dy: 0, dir: null, el: card };
+  card.classList.remove('animating');
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+}
+
+function onPointerMove(e) {
+  if (!drag) return;
+  drag.dx = e.clientX - drag.startX;
+  drag.dy = e.clientY - drag.startY;
+  if (!drag.dir && (Math.abs(drag.dx) > 8 || Math.abs(drag.dy) > 8)) {
+    drag.dir = Math.abs(drag.dx) > Math.abs(drag.dy) ? 'h' : 'v';
+    if (drag.dir === 'h') drag.el.classList.add('dragging');
+  }
+  if (drag.dir === 'h') {
+    const rot = reduceMotion ? 0 : drag.dx / 18;
+    drag.el.style.transform = `translateX(${drag.dx}px) rotate(${rot}deg)`;
+    drag.el.style.opacity = String(Math.max(0.35, 1 - Math.abs(drag.dx) / 700));
   }
 }
 
-function renderAzkar(tab) {
-  const list = document.getElementById('azkar-list');
-  const items = azkar[tab];
-  const progress = loadProgress();
+function onPointerUp() {
+  window.removeEventListener('pointermove', onPointerMove);
+  window.removeEventListener('pointerup', onPointerUp);
+  window.removeEventListener('pointercancel', onPointerUp);
+  if (!drag) return;
+  const { dx, dir, el } = drag;
+  const items = azkar[currentTab];
+  if (el) el.classList.remove('dragging');
+  drag = null;
 
-  list.innerHTML = '';
-
-  items.forEach((item, index) => {
-    const saved = progress[item.id] || 0;
-    const isDone = item.count ? saved >= item.count.required : !!saved;
-
-    const card = document.createElement('div');
-    card.className = 'card' + (isDone ? ' done' : '') + (item.theme === 'light' ? ' card-light' : '');
-    card.id = 'card-' + item.id;
-    card.style.animationDelay = (index * 0.04) + 's';
-
-    let counterHTML = '';
-    if (item.count) {
-      const current = saved;
-      const required = item.count.required;
-      const pct = Math.min(100, Math.round((current / required) * 100));
-
-      counterHTML = `
-        <hr class="divider" />
-        <div class="counter-wrap">
-          <div class="counter-progress-bar">
-            <div class="counter-progress-fill" id="fill-${item.id}" style="width:${pct}%"></div>
-          </div>
-          <div class="counter-row">
-            <div class="counter-display">
-              <span id="cur-${item.id}">${current}</span> / ${required}
-              <span class="done-badge" id="badge-${item.id}"> ✓ выполнено</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <button class="counter-reset" onclick="resetCounter('${item.id}', ${required})" aria-label="Сбросить счётчик">сброс</button>
-              <button class="counter-btn" id="btn-${item.id}" onclick="increment('${item.id}', ${required})" ${isDone ? 'disabled' : ''} aria-label="Добавить повторение">
-                + зикр
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    let readHTML = '';
-    if (!item.count) {
-      readHTML = `
-        <hr class="divider" />
-        <div class="read-row">
-          <button class="read-btn${isDone ? ' read-done' : ''}" id="read-${item.id}" onclick="toggleRead('${item.id}')" aria-pressed="${isDone}">
-            ${isDone ? '✓ прочитано' : 'отметить прочитанным'}
-          </button>
-        </div>
-      `;
-    }
-
-    card.innerHTML = `
-      <div class="card-number">${index + 1} / ${items.length}</div>
-      ${item.note ? `<div class="note">${item.note}</div>` : ''}
-      <div class="arabic">${item.arabic.replace(/\n/g, '<br>')}</div>
-      ${item.transliteration ? `<div class="transliteration">${item.transliteration}</div><hr class="divider" />` : ''}
-      <div class="translation">${item.translation}</div>
-      ${item.source ? `<div class="source">${item.source}</div>` : ''}
-      ${counterHTML}${readHTML}
-    `;
-
-    list.appendChild(card);
-  });
-
-  updateOverallProgress();
+  if (dir === 'h' && dx >= SWIPE_THRESHOLD && currentIndex < items.length) {
+    goNext();
+  } else if (dir === 'h' && dx <= -SWIPE_THRESHOLD && currentIndex > 0) {
+    goPrev();
+  } else {
+    snapBack(el);
+  }
 }
 
 function increment(id, required) {
@@ -407,6 +564,7 @@ function increment(id, required) {
   const fillEl = document.getElementById('fill-' + id);
   const btnEl = document.getElementById('btn-' + id);
   const badgeEl = document.getElementById('badge-' + id);
+  const hintEl = document.getElementById('hint-' + id);
   const cardEl = document.getElementById('card-' + id);
 
   if (curEl) curEl.textContent = current;
@@ -415,14 +573,12 @@ function increment(id, required) {
   if (current >= required) {
     if (btnEl) btnEl.disabled = true;
     if (badgeEl) badgeEl.style.display = 'inline';
-    if (cardEl) {
-      cardEl.classList.add('done', 'just-done');
+    if (hintEl) hintEl.hidden = false;
+    if (cardEl && !reduceMotion) {
+      cardEl.classList.add('just-done');
       setTimeout(() => cardEl.classList.remove('just-done'), 500);
     }
-
     vibrate([30, 20, 30]);
-    scrollToNextUncompleted(id);
-
     const { done, total } = updateOverallProgress();
     if (done === total) handleSetCompleted();
   } else {
@@ -439,78 +595,39 @@ function resetCounter(id, required) {
   const fillEl = document.getElementById('fill-' + id);
   const btnEl = document.getElementById('btn-' + id);
   const badgeEl = document.getElementById('badge-' + id);
-  const cardEl = document.getElementById('card-' + id);
+  const hintEl = document.getElementById('hint-' + id);
 
   if (curEl) curEl.textContent = 0;
   if (fillEl) fillEl.style.width = '0%';
   if (btnEl) btnEl.disabled = false;
   if (badgeEl) badgeEl.style.display = 'none';
-  if (cardEl) cardEl.classList.remove('done');
+  if (hintEl) hintEl.hidden = true;
 
   updateOverallProgress();
-}
-
-function toggleRead(id) {
-  const progress = loadProgress();
-  const nowDone = !progress[id];
-  if (nowDone) {
-    progress[id] = 1;
-  } else {
-    delete progress[id];
-  }
-  saveProgress(progress);
-
-  vibrate(nowDone ? [30, 20, 30] : 15);
-
-  const btnEl = document.getElementById('read-' + id);
-  const cardEl = document.getElementById('card-' + id);
-
-  if (btnEl) {
-    btnEl.textContent = nowDone ? '✓ прочитано' : 'отметить прочитанным';
-    btnEl.classList.toggle('read-done', nowDone);
-    btnEl.setAttribute('aria-pressed', String(nowDone));
-  }
-  if (cardEl) {
-    cardEl.classList.toggle('done', nowDone);
-    if (nowDone) {
-      cardEl.classList.add('just-done');
-      setTimeout(() => cardEl.classList.remove('just-done'), 500);
-    }
-  }
-
-  if (nowDone) scrollToNextUncompleted(id);
-
-  const { done, total } = updateOverallProgress();
-  if (nowDone && done === total) handleSetCompleted();
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.tab === currentTab) return;
-
-    document.querySelectorAll('.tab').forEach(t => {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-    btn.classList.add('active');
-    btn.setAttribute('aria-selected', 'true');
-
-    const list = document.getElementById('azkar-list');
-    list.classList.add('fade-out');
-
-    setTimeout(() => {
-      currentTab = btn.dataset.tab;
-      renderAzkar(currentTab);
-      list.classList.remove('fade-out');
-      list.classList.add('fade-in');
-      list.scrollTop = 0;
-      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-      setTimeout(() => list.classList.remove('fade-in'), 250);
-    }, 150);
+    currentTab = btn.dataset.tab;
+    syncTabUI();
+    currentIndex = startIndex();
+    renderCard(currentIndex);
   });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  if (e.target && e.target.closest && e.target.closest('input, textarea, [contenteditable]')) return;
+  const panel = document.getElementById('settings-panel');
+  if (panel && !panel.hasAttribute('hidden')) return;
+  const items = azkar[currentTab];
+  if (e.key === 'ArrowRight' && currentIndex < items.length) goNext();
+  else if (e.key === 'ArrowLeft' && currentIndex > 0) goPrev();
 });
 
 initSettings();
 syncTabUI();
 renderStreak(false);
-renderAzkar(currentTab);
+currentIndex = startIndex();
+renderCard(currentIndex);
