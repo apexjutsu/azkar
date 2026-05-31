@@ -12,23 +12,7 @@ function initialTab() {
 
 let currentTab = initialTab();
 
-function initTheme() {
-  const saved = localStorage.getItem('theme') || 'dark';
-  document.body.setAttribute('data-theme', saved);
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = saved === 'dark' ? '☀' : '☾';
-}
-
-function toggleTheme() {
-  const current = document.body.getAttribute('data-theme') || 'dark';
-  const next = current === 'dark' ? 'light' : 'dark';
-  document.body.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = next === 'dark' ? '☀' : '☾';
-}
-
-initTheme();
+/* theme: single dark (graphite + gold) — light theme and toggle removed */
 
 const STORAGE_KEY = 'azkar_progress';
 const DATE_KEY = 'azkar_date';
@@ -294,7 +278,7 @@ function showCelebration() {
   if (!container) return;
   container.innerHTML = '';
 
-  const colors = ['#0fa86e', '#1a7a55', '#a8d5c0', '#ffffff', '#4d8a70'];
+  const colors = ['#c8a15a', '#e2c486', '#9c7c3d', '#f0ebe1', '#b5894a'];
   for (let i = 0; i < 30; i++) {
     const dot = document.createElement('div');
     dot.className = 'confetti';
@@ -330,10 +314,15 @@ function startIndex() {
   return firstUndoneIndex();
 }
 
-function cardInnerHTML(item) {
+function cardInnerHTML(item, index) {
   const progress = loadProgress();
   const saved = progress[item.id] || 0;
   const isDone = item.count ? saved >= item.count.required : !!saved;
+
+  const pillHTML = item.count
+    ? `<span class="card-pill">${item.count.required}×</span>`
+    : `<span class="card-pill card-pill-read">чтение</span>`;
+  const headHTML = `<div class="card-head"><span class="card-diamond">${index + 1}</span>${pillHTML}</div>`;
 
   let actionHTML = '';
   if (item.count) {
@@ -364,6 +353,7 @@ function cardInnerHTML(item) {
   }
 
   return `
+    ${headHTML}
     ${item.note ? `<div class="note">${item.note}</div>` : ''}
     <div class="arabic">${item.arabic.replace(/\n/g, '<br>')}</div>
     ${item.transliteration ? `<div class="transliteration">${item.transliteration}</div><hr class="divider" />` : ''}
@@ -381,7 +371,7 @@ function endCardHTML() {
     const streakHTML = n >= 1
       ? `<div class="end-streak">${'\u{1F525}'} ${n} ${dayWord(n)} подряд</div>`
       : '';
-    return `<div class="card swipe-card end-card">
+    return `<div class="card swipe-card end-card enter">
       <div class="end-icon">✓</div>
       <div class="end-title">ма ша Аллах</div>
       <div class="end-sub">все азкары выполнены</div>
@@ -393,7 +383,7 @@ function endCardHTML() {
   }
 
   const left = total - done;
-  return `<div class="card swipe-card end-card">
+  return `<div class="card swipe-card end-card enter">
     <div class="end-icon end-icon-muted">•••</div>
     <div class="end-title">почти готово</div>
     <div class="end-sub">осталось ${left} ${zikrWord(left)}</div>
@@ -427,18 +417,19 @@ function renderCard(index) {
   if (index >= items.length) {
     stack.innerHTML = endCardHTML();
     const endEl = stack.firstElementChild;
-    if (endEl) attachDrag(endEl);
+    if (endEl) { attachDrag(endEl); setTimeout(() => endEl.classList.remove('enter'), 450); }
     return;
   }
 
   const item = items[index];
   const card = document.createElement('div');
-  card.className = 'card swipe-card' + (item.theme === 'light' ? ' card-light' : '');
+  card.className = 'card swipe-card enter';
   card.id = 'card-' + item.id;
-  card.innerHTML = cardInnerHTML(item);
+  card.innerHTML = cardInnerHTML(item, index);
   stack.innerHTML = '';
   stack.appendChild(card);
   attachDrag(card);
+  setTimeout(() => card.classList.remove('enter'), 450);
 }
 
 function markReadIfNeeded(item) {
