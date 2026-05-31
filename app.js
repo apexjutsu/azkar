@@ -507,10 +507,9 @@ function animateOut(style, cb) {
   if (!el || reduceMotion) { run(); return; }
 
   if (style === 'genie') {
-    el.style.transformOrigin = '50% 100%';
     el.classList.add('genie-out');
     el.addEventListener('animationend', run, { once: true });
-    setTimeout(run, 620);
+    setTimeout(run, 720);
     return;
   }
 
