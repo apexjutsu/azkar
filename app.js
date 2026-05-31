@@ -564,7 +564,6 @@ function increment(id, required) {
   const fillEl = document.getElementById('fill-' + id);
   const btnEl = document.getElementById('btn-' + id);
   const badgeEl = document.getElementById('badge-' + id);
-  const hintEl = document.getElementById('hint-' + id);
   const cardEl = document.getElementById('card-' + id);
 
   if (curEl) curEl.textContent = current;
@@ -573,7 +572,6 @@ function increment(id, required) {
   if (current >= required) {
     if (btnEl) btnEl.disabled = true;
     if (badgeEl) badgeEl.style.display = 'inline';
-    if (hintEl) hintEl.hidden = false;
     if (cardEl && !reduceMotion) {
       cardEl.classList.add('just-done');
       setTimeout(() => cardEl.classList.remove('just-done'), 500);
@@ -581,6 +579,13 @@ function increment(id, required) {
     vibrate([30, 20, 30]);
     const { done, total } = updateOverallProgress();
     if (done === total) handleSetCompleted();
+    // auto-advance to the next azkar once the count is fully reached
+    setTimeout(() => {
+      const items = azkar[currentTab];
+      const stillHere = items[currentIndex] && items[currentIndex].id === id;
+      const stillDone = (loadProgress()[id] || 0) >= required;
+      if (stillHere && stillDone && currentIndex < items.length) goNext();
+    }, reduceMotion ? 300 : 480);
   } else {
     updateOverallProgress();
   }
