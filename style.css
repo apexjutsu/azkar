@@ -34,6 +34,12 @@ body {
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@supports (min-height: 100dvh) {
+  body { min-height: 100dvh; }
 }
 
 /* ── Header ── */
@@ -850,4 +856,89 @@ body.hide-translit .transliteration + .divider {
   .deck-nav { gap: 16px; padding: 10px 12px 2px; }
   .end-card { padding: 30px 18px; }
   .settings-panel { top: 52px; right: 8px; left: 8px; width: auto; }
+}
+
+/* ── Stage: center the card group, anchor ornament at bottom ── */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+}
+
+.deck-nav { gap: 48px; }
+
+/* ── Progress dots ── */
+.deck-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  justify-content: center;
+  align-content: center;
+  max-width: 470px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-deep);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 0.1s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.dot:hover { border-color: var(--gold); }
+.dot.done { background: var(--gold); border-color: var(--gold); }
+.dot.cur { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200, 161, 90, 0.22); }
+.dot.cur.done { background: var(--gold); }
+.dot:active { transform: scale(0.85); }
+
+/* ── Bottom ornament ── */
+.deck-ornament {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0 12px;
+}
+
+/* ── Inline SVG icons ── */
+.ico-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+}
+
+.logo-icon .ico-svg { width: 15px; height: 15px; }
+.streak { display: inline-flex; }
+.streak-flame { display: inline-flex; align-items: center; }
+.streak .ico-svg { width: 1.05em; height: 1.05em; }
+#settings-toggle { display: inline-flex; align-items: center; justify-content: center; }
+#settings-toggle .ico-svg { width: 19px; height: 19px; }
+.nav-btn .ico-svg { width: 22px; height: 22px; }
+.completion-check .ico-svg,
+.end-icon .ico-svg { width: 30px; height: 30px; }
+
+.done-badge { display: none; align-items: center; gap: 3px; }
+.done-badge .ico-svg { width: 0.95em; height: 0.95em; }
+
+.read-next-btn { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.read-next-btn .ico-svg { width: 1.05em; height: 1.05em; vertical-align: middle; }
+
+.swipe-next-hint { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.completion-streak,
+.end-streak { display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+/* ── New elements: mobile ── */
+@media (max-width: 480px) {
+  .deck-nav { gap: 34px; }
+  .deck-dots { gap: 8px; padding: 14px 16px 0; max-width: 360px; }
+  .deck-ornament { padding: 12px 0 8px; }
 }

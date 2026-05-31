@@ -6,6 +6,11 @@ const ARABIC_SCALE_MAX = 1.8;
 const ARABIC_SCALE_STEP = 0.1;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+const ICON = {
+  flame: '<svg class="ico-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+  check: '<svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
+};
+
 function initialTab() {
   return new Date().getHours() >= EVENING_START_HOUR ? 'evening' : 'morning';
 }
@@ -200,7 +205,7 @@ function showCompletion() {
   const n = displayStreak();
   if (streakLine) {
     if (n >= 1) {
-      streakLine.textContent = '\u{1F525} ' + n + ' ' + dayWord(n) + ' подряд';
+      streakLine.innerHTML = ICON.flame + ' ' + n + ' ' + dayWord(n) + ' подряд';
       streakLine.hidden = false;
     } else {
       streakLine.hidden = true;
@@ -337,18 +342,18 @@ function cardInnerHTML(item, index) {
         <div class="counter-row">
           <div class="counter-display">
             <span id="cur-${item.id}">${saved}</span> / ${required}
-            <span class="done-badge" id="badge-${item.id}"${isDone ? ' style="display:inline"' : ''}> ✓ выполнено</span>
+            <span class="done-badge" id="badge-${item.id}"${isDone ? ' style="display:inline-flex"' : ''}>${ICON.check}выполнено</span>
           </div>
           <button class="counter-reset" onclick="resetCounter('${item.id}', ${required})" aria-label="Сбросить счётчик">сброс</button>
         </div>
         <button class="counter-btn-big" id="btn-${item.id}" onclick="increment('${item.id}', ${required})"${isDone ? ' disabled' : ''} aria-label="Добавить повторение">+ зикр</button>
-        <div class="swipe-next-hint" id="hint-${item.id}"${isDone ? '' : ' hidden'}>готово ✓ — листай вправо →</div>
+        <div class="swipe-next-hint" id="hint-${item.id}"${isDone ? '' : ' hidden'}>готово ${ICON.check} — листай вправо →</div>
       </div>`;
   } else {
     actionHTML = `
       <hr class="divider" />
       <button class="read-next-btn${isDone ? ' is-read' : ''}" onclick="goNext()" aria-label="Прочитано, следующий">
-        ${isDone ? '✓ прочитано — дальше' : 'прочитано — дальше →'}
+        ${isDone ? ICON.check + ' прочитано — дальше' : 'прочитано — дальше →'}
       </button>`;
   }
 
@@ -369,10 +374,10 @@ function endCardHTML() {
 
   if (allDone) {
     const streakHTML = n >= 1
-      ? `<div class="end-streak">${'\u{1F525}'} ${n} ${dayWord(n)} подряд</div>`
+      ? `<div class="end-streak">${ICON.flame} ${n} ${dayWord(n)} подряд</div>`
       : '';
     return `<div class="card swipe-card end-card enter">
-      <div class="end-icon">✓</div>
+      <div class="end-icon">${ICON.check}</div>
       <div class="end-title">ма ша Аллах</div>
       <div class="end-sub">все азкары выполнены</div>
       ${streakHTML}
@@ -395,14 +400,37 @@ function endCardHTML() {
 }
 
 function updateNav(index, total) {
-  const pos = document.getElementById('deck-pos');
   const prev = document.getElementById('prev-btn');
   const next = document.getElementById('next-btn');
   const stack = document.getElementById('deck-stack');
-  if (pos) pos.textContent = index >= total ? 'готово' : (index + 1) + ' / ' + total;
   if (prev) prev.disabled = index <= 0;
   if (next) next.disabled = index >= total;
   if (stack) stack.dataset.stack = String(Math.max(0, Math.min(2, total - index - 1)));
+  renderDots(index, total);
+}
+
+function renderDots(index, total) {
+  const wrap = document.getElementById('deck-dots');
+  if (!wrap) return;
+  const items = azkar[currentTab];
+  const progress = loadProgress();
+  let html = '';
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    const done = it.count ? (progress[it.id] || 0) >= it.count.required : !!progress[it.id];
+    let cls = 'dot';
+    if (done) cls += ' done';
+    if (i === index) cls += ' cur';
+    html += `<button class="${cls}" onclick="jumpTo(${i})" aria-label="Азкар ${i + 1}"></button>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function jumpTo(i) {
+  const items = azkar[currentTab];
+  if (i < 0 || i >= items.length || i === currentIndex) return;
+  currentIndex = i;
+  renderCard(i);
 }
 
 function renderCard(index) {
@@ -562,7 +590,7 @@ function increment(id, required) {
 
   if (current >= required) {
     if (btnEl) btnEl.disabled = true;
-    if (badgeEl) badgeEl.style.display = 'inline';
+    if (badgeEl) badgeEl.style.display = 'inline-flex';
     if (cardEl && !reduceMotion) {
       cardEl.classList.add('just-done');
       setTimeout(() => cardEl.classList.remove('just-done'), 500);

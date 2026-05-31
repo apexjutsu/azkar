@@ -17,13 +17,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=17" />
+  <link rel="stylesheet" href="style.css?v=18" />
 </head>
 <body>
 
   <header>
     <div class="logo">
-      <div class="logo-icon">&#9789;</div>
+      <div class="logo-icon"><svg class="ico-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></div>
       <span class="logo-text">азкары</span>
     </div>
     <div class="header-right">
@@ -32,9 +32,9 @@
         <button class="tab" data-tab="evening" role="tab" aria-selected="false" aria-controls="deck">вечером</button>
       </div>
       <div id="streak" class="streak" hidden title="дней подряд">
-        <span class="streak-flame">&#128293;</span><span id="streak-count">0</span>
+        <span class="streak-flame"><svg class="ico-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span><span id="streak-count">0</span>
       </div>
-      <button id="settings-toggle" onclick="toggleSettings()" title="настройки" aria-label="Настройки" aria-expanded="false" aria-haspopup="true">&#9881;</button>
+      <button id="settings-toggle" onclick="toggleSettings()" title="настройки" aria-label="Настройки" aria-expanded="false" aria-haspopup="true"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
   </header>
 
@@ -62,22 +62,35 @@
     <div class="progress-bar-text" id="progress-text"></div>
   </div>
 
-  <main id="deck" class="deck" role="tabpanel">
-    <div id="deck-stack" class="deck-stack" data-stack="0"></div>
-  </main>
+  <div class="stage">
+    <main id="deck" class="deck" role="tabpanel">
+      <div id="deck-stack" class="deck-stack" data-stack="0"></div>
+    </main>
 
-  <div class="deck-nav">
-    <button id="prev-btn" class="nav-btn" onclick="goPrev()" aria-label="Назад" disabled>&#8249;</button>
-    <div id="deck-pos" class="deck-pos" aria-live="polite">1 / 1</div>
-    <button id="next-btn" class="nav-btn" onclick="goNext()" aria-label="Дальше">&#8250;</button>
+    <div class="deck-nav">
+      <button id="prev-btn" class="nav-btn" onclick="goPrev()" aria-label="Назад" disabled><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button id="next-btn" class="nav-btn" onclick="goNext()" aria-label="Дальше"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+    </div>
+    <div id="deck-dots" class="deck-dots" aria-hidden="true"></div>
+    <div class="swipe-hint">листайте свайпом или стрелками</div>
   </div>
-  <div class="swipe-hint">листайте свайпом или стрелками</div>
+
+  <div class="deck-ornament" aria-hidden="true">
+    <svg width="230" height="34" viewBox="0 0 230 34" fill="none">
+      <line x1="14" y1="17" x2="92" y2="17" stroke="#c8a15a" stroke-width="1" opacity="0.4"/>
+      <circle cx="92" cy="17" r="2" fill="#c8a15a" opacity="0.65"/>
+      <rect x="105" y="7" width="20" height="20" transform="rotate(45 115 17)" stroke="#c8a15a" stroke-width="1.2" opacity="0.85"/>
+      <rect x="109.5" y="11.5" width="11" height="11" transform="rotate(45 115 17)" fill="#c8a15a" opacity="0.3"/>
+      <circle cx="138" cy="17" r="2" fill="#c8a15a" opacity="0.65"/>
+      <line x1="138" y1="17" x2="216" y2="17" stroke="#c8a15a" stroke-width="1" opacity="0.4"/>
+    </svg>
+  </div>
 
   <div id="celebration" class="celebration" aria-hidden="true"></div>
 
   <div id="completion-screen" class="completion-screen" hidden aria-hidden="true" onclick="if(event.target===this)hideCompletion()">
     <div class="completion-card" role="dialog" aria-modal="true" aria-label="Все азкары выполнены">
-      <div class="completion-check">&#10003;</div>
+      <div class="completion-check"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
       <div class="completion-title">ма ша Аллах</div>
       <div class="completion-sub">все азкары выполнены</div>
       <div class="completion-streak" id="completion-streak" hidden></div>
@@ -88,7 +101,7 @@
   <footer>апекс &copy;&nbsp;2026</footer>
 
   <script src="data.js?v=6"></script>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
