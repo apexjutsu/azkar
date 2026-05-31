@@ -471,11 +471,12 @@ function markReadIfNeeded(item) {
   if (done === total) handleSetCompleted();
 }
 
-function goNext() {
+function goNext(opts) {
   const items = azkar[currentTab];
   if (currentIndex >= items.length) return;
   markReadIfNeeded(items[currentIndex]);
-  animateOut('right', () => {
+  const style = opts && opts.swipe ? 'right' : 'genie';
+  animateOut(style, () => {
     currentIndex = Math.min(items.length, currentIndex + 1);
     renderCard(currentIndex);
   });
@@ -499,14 +500,23 @@ function restartDeck() {
   renderCard(currentIndex);
 }
 
-function animateOut(dir, cb) {
+function animateOut(style, cb) {
   const el = document.querySelector('.swipe-card');
   let ran = false;
   const run = () => { if (ran) return; ran = true; cb(); };
   if (!el || reduceMotion) { run(); return; }
+
+  if (style === 'genie') {
+    el.style.transformOrigin = '50% 100%';
+    el.classList.add('genie-out');
+    el.addEventListener('animationend', run, { once: true });
+    setTimeout(run, 620);
+    return;
+  }
+
   el.classList.add('animating');
   requestAnimationFrame(() => {
-    el.style.transform = dir === 'right'
+    el.style.transform = style === 'right'
       ? 'translateX(120%) rotate(10deg)'
       : 'translateX(-120%) rotate(-10deg)';
     el.style.opacity = '0';
@@ -563,7 +573,7 @@ function onPointerUp() {
   drag = null;
 
   if (dir === 'h' && dx >= SWIPE_THRESHOLD && currentIndex < items.length) {
-    goNext();
+    goNext({ swipe: true });
   } else if (dir === 'h' && dx <= -SWIPE_THRESHOLD && currentIndex > 0) {
     goPrev();
   } else {

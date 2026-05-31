@@ -958,3 +958,34 @@ body.hide-translit .transliteration + .divider {
   .deck-dots { max-width: 540px; gap: 11px; }
   .nav-btn { width: 52px; height: 52px; }
 }
+
+/* ── Genie / parachute dismiss (forward via button / arrow / auto) ── */
+.swipe-card.genie-out {
+  animation: genieOut 0.5s cubic-bezier(0.5, 0, 0.75, 0.35) forwards;
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform, opacity, clip-path;
+}
+
+@keyframes genieOut {
+  0% {
+    opacity: 1;
+    transform: perspective(1000px) translateY(0) translateX(0) scaleX(1) scaleY(1) rotateX(0deg);
+    clip-path: inset(0 round 16px);
+  }
+  20% {
+    opacity: 1;
+    transform: perspective(1000px) translateY(-6px) translateX(0) scaleX(1.05) scaleY(0.92) rotateX(7deg);
+    clip-path: inset(0 round 16px);
+  }
+  55% {
+    opacity: 0.85;
+    transform: perspective(1000px) translateY(34%) translateX(-2%) scaleX(0.46) scaleY(0.6) rotateX(18deg);
+    clip-path: inset(0 30% 0 30% round 28px);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(1000px) translateY(125%) translateX(3%) scaleX(0.05) scaleY(0.16) rotateX(34deg);
+    clip-path: inset(0 47% 0 47% round 50px);
+  }
+}
