@@ -942,3 +942,19 @@ body.hide-translit .transliteration + .divider {
   .deck-dots { gap: 8px; padding: 14px 16px 0; max-width: 360px; }
   .deck-ornament { padding: 12px 0 8px; }
 }
+
+/* ── Tablet / iPad ── */
+@media (min-width: 700px) {
+  #deck { max-width: 760px; padding: 22px 24px 4px; }
+  .progress-bar { max-width: 760px; }
+  .deck-nav { max-width: 760px; }
+  .card { padding: 28px 32px; border-radius: 18px; }
+  .arabic { font-size: calc(1.6rem * var(--arabic-scale, 1)); line-height: 2.25; }
+  .transliteration { font-size: 0.92rem; }
+  .translation { font-size: 0.95rem; }
+  .card-diamond { width: 38px; height: 38px; font-size: 0.85rem; }
+  .card-pill { font-size: 0.76rem; padding: 6px 14px; }
+  .dot { width: 12px; height: 12px; }
+  .deck-dots { max-width: 540px; gap: 11px; }
+  .nav-btn { width: 52px; height: 52px; }
+}

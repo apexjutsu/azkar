@@ -1,4 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#0f3d22"/>
-  <text x="256" y="340" font-size="280" text-anchor="middle" fill="#0fa86e">☽</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b1815"/>
+      <stop offset="1" stop-color="#100e0c"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e7c98c"/>
+      <stop offset="1" stop-color="#b88a47"/>
+    </linearGradient>
+    <mask id="cres">
+      <circle cx="256" cy="272" r="150" fill="#ffffff"/>
+      <circle cx="298" cy="236" r="126" fill="#000000"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#gold)" mask="url(#cres)"/>
 </svg>
