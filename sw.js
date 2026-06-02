@@ -1,4 +1,4 @@
-const CACHE_NAME = 'azkar-v14';
+const CACHE_NAME = 'azkar-v15';
 const ASSETS = [
   './',
   './index.html',

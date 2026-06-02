@@ -166,7 +166,7 @@ function enablePrayerTimes() {
         prompt.innerHTML = retryBtn;
       }
     },
-    { enableHighAccuracy: false, timeout: 20000, maximumAge: 3600000 }
+    { enableHighAccuracy: false, timeout: 60000, maximumAge: 3600000 }
   );
 }
 
