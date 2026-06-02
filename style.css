@@ -870,6 +870,14 @@ footer {
   text-align: center;
 }
 
+.prayer-denied {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  display: block;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
 .prayer-header {
   display: flex;
   align-items: center;

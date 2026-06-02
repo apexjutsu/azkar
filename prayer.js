@@ -146,6 +146,10 @@ function enablePrayerTimes() {
   var prompt = document.getElementById('prayer-prompt');
   if (prompt) prompt.innerHTML = '<span class="prayer-loading">определение…</span>';
 
+  var retryBtn = '<button class="prayer-enable-btn" onclick="enablePrayerTimes()">' +
+    '<svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+    ' попробовать снова</button>';
+
   navigator.geolocation.getCurrentPosition(
     function (pos) {
       saveLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -154,13 +158,15 @@ function enablePrayerTimes() {
       showPrayerContent();
       fetchCityName(pos.coords.latitude, pos.coords.longitude);
     },
-    function () {
-      if (prompt) prompt.innerHTML =
-        '<button class="prayer-enable-btn" onclick="enablePrayerTimes()">' +
-        '<svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
-        ' попробовать снова</button>';
+    function (err) {
+      if (!prompt) return;
+      if (err && err.code === 1) {
+        prompt.innerHTML = '<span class="prayer-denied">разрешите геолокацию в настройках браузера</span>' + retryBtn;
+      } else {
+        prompt.innerHTML = retryBtn;
+      }
     },
-    { timeout: 15000, maximumAge: 3600000 }
+    { enableHighAccuracy: false, timeout: 20000, maximumAge: 3600000 }
   );
 }
 
