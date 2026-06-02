@@ -151,9 +151,9 @@ function onLocationFound(lat, lng) {
 
 function ipFallback() {
   var prompt = document.getElementById('prayer-prompt');
-  fetch('https://ipapi.co/json/').then(function (r) { return r.json(); }).then(function (d) {
+  fetch('https://get.geojs.io/v1/ip/geo.json').then(function (r) { return r.json(); }).then(function (d) {
     if (d && d.latitude && d.longitude) {
-      onLocationFound(d.latitude, d.longitude);
+      onLocationFound(Number(d.latitude), Number(d.longitude));
     } else if (prompt) {
       prompt.innerHTML = retryBtnHTML;
     }
