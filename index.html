@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=21" />
+  <link rel="stylesheet" href="style.css?v=22" />
 </head>
 <body>
 
@@ -53,13 +53,45 @@
         <span class="switch-knob"></span>
       </button>
     </div>
+    <div class="settings-row">
+      <span class="settings-label">время намазов</span>
+      <button id="prayer-toggle" class="switch" role="switch" aria-checked="true" onclick="togglePrayerTimes()" aria-label="Показывать время намазов">
+        <span class="switch-knob"></span>
+      </button>
+    </div>
   </div>
 
-  <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
     <div class="progress-bar-inner">
       <div class="progress-bar-fill" id="progress-fill"></div>
     </div>
     <div class="progress-bar-text" id="progress-text"></div>
+  </div>
+
+  <div id="prayer-times" class="prayer-times">
+    <div id="prayer-prompt" class="prayer-prompt">
+      <button class="prayer-enable-btn" onclick="enablePrayerTimes()">
+        <svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        время намазов
+      </button>
+    </div>
+    <div id="prayer-content" hidden>
+      <div class="prayer-header">
+        <button class="prayer-loc-pill" id="prayer-loc-pill" onclick="enablePrayerTimes()" title="обновить местоположение">
+          <svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="prayer-city"></span>
+        </button>
+        <div class="prayer-next" id="prayer-next" hidden></div>
+      </div>
+      <div class="prayer-times-row">
+        <div class="prayer-item" data-prayer="fajr"><div class="prayer-name">фаджр</div><div class="prayer-time" id="pt-fajr">--:--</div></div>
+        <div class="prayer-item" data-prayer="sunrise"><div class="prayer-name">восход</div><div class="prayer-time" id="pt-sunrise">--:--</div></div>
+        <div class="prayer-item" data-prayer="dhuhr"><div class="prayer-name">зухр</div><div class="prayer-time" id="pt-dhuhr">--:--</div></div>
+        <div class="prayer-item" data-prayer="asr"><div class="prayer-name">аср</div><div class="prayer-time" id="pt-asr">--:--</div></div>
+        <div class="prayer-item" data-prayer="maghrib"><div class="prayer-name">магриб</div><div class="prayer-time" id="pt-maghrib">--:--</div></div>
+        <div class="prayer-item" data-prayer="isha"><div class="prayer-name">иша</div><div class="prayer-time" id="pt-isha">--:--</div></div>
+      </div>
+    </div>
   </div>
 
   <div class="stage">
@@ -72,17 +104,13 @@
       <button id="next-btn" class="nav-btn" onclick="goNext()" aria-label="Дальше"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
     </div>
     <div id="deck-dots" class="deck-dots" aria-hidden="true"></div>
-    <div class="swipe-hint">листайте свайпом или стрелками</div>
+    <div class="swipe-hint" hidden>листайте свайпом или стрелками</div>
   </div>
 
   <div class="deck-ornament" aria-hidden="true">
-    <svg width="230" height="34" viewBox="0 0 230 34" fill="none">
-      <line x1="14" y1="17" x2="92" y2="17" stroke="#c8a15a" stroke-width="1" opacity="0.4"/>
-      <circle cx="92" cy="17" r="2" fill="#c8a15a" opacity="0.65"/>
-      <rect x="105" y="7" width="20" height="20" transform="rotate(45 115 17)" stroke="#c8a15a" stroke-width="1.2" opacity="0.85"/>
-      <rect x="109.5" y="11.5" width="11" height="11" transform="rotate(45 115 17)" fill="#c8a15a" opacity="0.3"/>
-      <circle cx="138" cy="17" r="2" fill="#c8a15a" opacity="0.65"/>
-      <line x1="138" y1="17" x2="216" y2="17" stroke="#c8a15a" stroke-width="1" opacity="0.4"/>
+    <svg width="40" height="34" viewBox="0 0 40 34" fill="none">
+      <rect x="10" y="7" width="20" height="20" transform="rotate(45 20 17)" stroke="#c8a15a" stroke-width="1.2" opacity="0.85"/>
+      <rect x="14.5" y="11.5" width="11" height="11" transform="rotate(45 20 17)" fill="#c8a15a" opacity="0.3"/>
     </svg>
   </div>
 
@@ -102,6 +130,7 @@
 
   <script src="data.js?v=6"></script>
   <script src="app.js?v=13"></script>
+  <script src="prayer.js?v=1"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
