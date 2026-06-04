@@ -1,10 +1,10 @@
-const CACHE_NAME = 'azkar-v17';
+const CACHE_NAME = 'azkar-v18';
 const ASSETS = [
   './',
   './index.html',
   './style.css?v=23',
-  './app.js?v=13',
-  './data.js?v=6',
+  './app.js?v=14',
+  './data.js?v=7',
   './prayer.js?v=2',
   './icon.png',
   './icon.svg',

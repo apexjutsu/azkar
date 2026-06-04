@@ -20,21 +20,24 @@ let currentTab = initialTab();
 /* theme: single dark (graphite + gold) — light theme and toggle removed */
 
 const STORAGE_KEY = 'azkar_progress';
-const DATE_KEY = 'azkar_date';
+const MORNING_DATE_KEY = 'azkar_m_date';
+const EVENING_DATE_KEY = 'azkar_e_date';
 
 function getTodayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/* local calendar date (used for per-period resets, not UTC) */
+function localDateStr(d) {
+  d = d || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function loadProgress() {
   try {
-    const saved = localStorage.getItem(DATE_KEY);
-    const today = getTodayStr();
-    if (saved !== today) {
-      localStorage.setItem(DATE_KEY, today);
-      localStorage.removeItem(STORAGE_KEY);
-      return {};
-    }
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
   } catch {
     return {};
@@ -43,6 +46,33 @@ function loadProgress() {
 
 function saveProgress(progress) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+}
+
+/* Reset each set when its reading time arrives:
+   morning azkars reset at local midnight (new day),
+   evening azkars reset at local 15:00. Returns true if anything was cleared. */
+function applyPeriodResets() {
+  let progress;
+  try { progress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { progress = {}; }
+  const today = localDateStr();
+  const hour = new Date().getHours();
+  let changed = false;
+
+  if (localStorage.getItem(MORNING_DATE_KEY) !== today) {
+    (azkar.morning || []).forEach(it => {
+      if (it.id in progress) { delete progress[it.id]; changed = true; }
+    });
+    localStorage.setItem(MORNING_DATE_KEY, today);
+  }
+  if (hour >= EVENING_START_HOUR && localStorage.getItem(EVENING_DATE_KEY) !== today) {
+    (azkar.evening || []).forEach(it => {
+      if (it.id in progress) { delete progress[it.id]; changed = true; }
+    });
+    localStorage.setItem(EVENING_DATE_KEY, today);
+  }
+  if (changed) saveProgress(progress);
+  return changed;
 }
 
 function vibrate(ms) {
@@ -643,6 +673,7 @@ document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.tab === currentTab) return;
     currentTab = btn.dataset.tab;
+    applyPeriodResets();
     syncTabUI();
     currentIndex = startIndex();
     renderCard(currentIndex);
@@ -660,7 +691,19 @@ document.addEventListener('keydown', e => {
 });
 
 initSettings();
+applyPeriodResets();
 syncTabUI();
 renderStreak(false);
 currentIndex = startIndex();
 renderCard(currentIndex);
+
+/* Re-check reset boundaries when returning to the app (e.g. opened in the
+   morning, reopened in the evening). */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  if (applyPeriodResets()) {
+    currentIndex = startIndex();
+    renderCard(currentIndex);
+    renderStreak(false);
+  }
+});
