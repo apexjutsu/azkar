@@ -1046,11 +1046,9 @@ body.hide-translit .transliteration + .divider {
 
 /* ── Progress dots ── */
 .deck-dots {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 9px;
   justify-content: center;
-  align-content: center;
   max-width: 470px;
   margin: 0 auto;
   padding: 14px 24px 0;

@@ -454,6 +454,7 @@ function renderDots(index, total) {
     html += `<button class="${cls}" onclick="jumpTo(${i})" aria-label="Азкар ${i + 1}"></button>`;
   }
   wrap.innerHTML = html;
+  wrap.style.gridTemplateColumns = 'repeat(' + Math.ceil(items.length / 2) + ', auto)';
 }
 
 function jumpTo(i) {
