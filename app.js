@@ -444,17 +444,18 @@ function renderDots(index, total) {
   if (!wrap) return;
   const items = azkar[currentTab];
   const progress = loadProgress();
-  let html = '';
+  const half = Math.ceil(items.length / 2);
+  let row1 = '', row2 = '';
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
     const done = it.count ? (progress[it.id] || 0) >= it.count.required : !!progress[it.id];
     let cls = 'dot';
     if (done) cls += ' done';
     if (i === index) cls += ' cur';
-    html += `<button class="${cls}" onclick="jumpTo(${i})" aria-label="Азкар ${i + 1}"></button>`;
+    const btn = `<button class="${cls}" onclick="jumpTo(${i})" aria-label="Азкар ${i + 1}"></button>`;
+    if (i < half) row1 += btn; else row2 += btn;
   }
-  wrap.innerHTML = html;
-  wrap.style.gridTemplateColumns = 'repeat(' + Math.ceil(items.length / 2) + ', auto)';
+  wrap.innerHTML = '<div class="dot-row">' + row1 + '</div><div class="dot-row">' + row2 + '</div>';
 }
 
 function jumpTo(i) {
