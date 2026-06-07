@@ -17,14 +17,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=25" />
+  <link rel="stylesheet" href="style.css?v=26" />
+  <link rel="stylesheet" href="glass.css?v=1" />
 </head>
 <body>
 
   <header>
     <div class="logo">
-      <div class="logo-icon"><svg class="ico-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></div>
-      <span class="logo-text">азкары</span>
+      <div class="logo-icon"><svg class="ico-svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg></div>
+      <span class="logo-text">neezam</span>
     </div>
     <div class="header-right">
       <div class="tabs" role="tablist" aria-label="Время суток">
@@ -122,10 +123,10 @@
   <footer>&copy;&nbsp;апекс&nbsp;2026</footer>
 
   <script src="data.js?v=7"></script>
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
   <script src="prayer.js?v=2"></script>
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
       navigator.serviceWorker.register('sw.js');
     }
   </script>

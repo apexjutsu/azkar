@@ -356,7 +356,7 @@ function cardInnerHTML(item, index) {
 
   const pillHTML = item.count
     ? `<span class="card-pill">${item.count.required}×</span>`
-    : `<span class="card-pill card-pill-read">чтение</span>`;
+    : `<span class="card-pill">1×</span>`;
   const headHTML = `<div class="card-head"><span class="card-diamond">${index + 1}</span>${pillHTML}</div>`;
 
   let actionHTML = '';
@@ -377,6 +377,7 @@ function cardInnerHTML(item, index) {
           <button class="counter-reset" onclick="resetCounter('${item.id}', ${required})" aria-label="Сбросить счётчик">сброс</button>
         </div>
         <button class="counter-btn-big" id="btn-${item.id}" onclick="increment('${item.id}', ${required})"${isDone ? ' disabled' : ''} aria-label="Добавить повторение">+ зикр</button>
+        ${required >= 33 ? `<button class="counter-done-btn" id="done-${item.id}" onclick="markCounterDone('${item.id}', ${required})"${isDone ? ' hidden' : ''} aria-label="Отметить прочитанным целиком">прочитано — дальше →</button>` : ''}
         <div class="swipe-next-hint" id="hint-${item.id}"${isDone ? '' : ' hidden'}>готово ${ICON.check} — листай вправо →</div>
       </div>`;
   } else {
@@ -669,6 +670,17 @@ function resetCounter(id, required) {
   if (hintEl) hintEl.hidden = true;
 
   updateOverallProgress();
+}
+
+/* Mark a long (100×) azkar as fully read at once, without tapping each rep. */
+function markCounterDone(id, required) {
+  const progress = loadProgress();
+  progress[id] = required;
+  saveProgress(progress);
+  vibrate([30, 20, 30]);
+  const { done, total } = updateOverallProgress();
+  if (done === total) handleSetCompleted();
+  goNext();
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
