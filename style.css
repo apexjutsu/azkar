@@ -1050,7 +1050,7 @@ body.hide-translit .transliteration + .divider {
   .nav-btn { width: 44px; height: 44px; font-size: 1.5rem; }
   .deck-nav { gap: 16px; padding: 10px 12px 2px; }
   .end-card { padding: 30px 18px; }
-  .settings-panel { top: 52px; right: 8px; left: 8px; width: auto; }
+  .settings-panel { top: 52px; right: 14px; }
 }
 
 /* ── Stage ── */
