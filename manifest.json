@@ -1,7 +1,7 @@
 {
-  "name": "азкары",
-  "short_name": "азкары",
-  "description": "Утренние и вечерние азкары",
+  "name": "neezam",
+  "short_name": "neezam",
+  "description": "утренние и вечерние азкары",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
