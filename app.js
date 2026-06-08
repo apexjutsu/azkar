@@ -683,6 +683,17 @@ function markCounterDone(id, required) {
   goNext();
 }
 
+function resetAll() {
+  if (!confirm('сбросить весь прогресс? все счётчики вернутся к нулю.')) return;
+  const items = azkar[currentTab];
+  const progress = loadProgress();
+  items.forEach(it => { delete progress[it.id]; });
+  saveProgress(progress);
+  currentIndex = 0;
+  renderCard(currentIndex);
+  closeSettings();
+}
+
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.tab === currentTab) return;
