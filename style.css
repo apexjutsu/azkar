@@ -350,10 +350,14 @@ header {
 .arabic {
   font-size: calc(1.45rem * var(--arabic-scale, 1));
   text-align: right;
-  line-height: 2.15;
+  line-height: 2.3;
   color: var(--arabic);
-  font-family: 'Amiri', 'Traditional Arabic', serif;
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
   direction: rtl;
+  unicode-bidi: isolate;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1, "calt" 1;
+  word-spacing: 0.05em;
   margin-bottom: 16px;
 }
 
@@ -1027,7 +1031,7 @@ body.hide-translit .transliteration + .divider {
   .streak { font-size: 0.85rem; padding: 2px 4px; }
   #deck { padding: 16px 12px 0; }
   .card { padding: 18px 17px; border-radius: 14px; }
-  .arabic { font-size: calc(1.3rem * var(--arabic-scale, 1)); line-height: 2.05; }
+  .arabic { font-size: calc(1.3rem * var(--arabic-scale, 1)); line-height: 2.2; }
   .note { font-size: 0.8rem; }
   .nav-btn { width: 44px; height: 44px; font-size: 1.5rem; }
   .deck-nav { gap: 16px; padding: 10px 12px 2px; }
@@ -1137,7 +1141,7 @@ body.hide-translit .transliteration + .divider {
   .progress-bar { max-width: 760px; }
   .deck-nav { max-width: 760px; }
   .card { padding: 28px 32px; border-radius: 18px; }
-  .arabic { font-size: calc(1.6rem * var(--arabic-scale, 1)); line-height: 2.25; }
+  .arabic { font-size: calc(1.6rem * var(--arabic-scale, 1)); line-height: 2.4; }
   .transliteration { font-size: 0.92rem; }
   .translation { font-size: 0.95rem; }
   .card-diamond { width: 38px; height: 38px; font-size: 0.85rem; }
