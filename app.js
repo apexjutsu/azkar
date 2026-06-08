@@ -329,10 +329,8 @@ function showCelebration() {
   setTimeout(() => { container.innerHTML = ''; }, 2500);
 }
 
-/* ── Swipe deck ── */
-const SWIPE_THRESHOLD = 70;
+/* ── Deck ── */
 let currentIndex = 0;
-let drag = null;
 
 function firstUndoneIndex() {
   const items = azkar[currentTab];
@@ -347,6 +345,14 @@ function firstUndoneIndex() {
 
 function startIndex() {
   return firstUndoneIndex();
+}
+
+function formatArabic(text) {
+  const parts = text.split('\n\n');
+  if (parts.length === 2) {
+    return `<div class="arabic"><div class="arabic-prefix">${parts[0].trim()}</div>${parts[1].trim().replace(/\n/g, '<br>')}</div>`;
+  }
+  return `<div class="arabic">${text.replace(/\n/g, '<br>')}</div>`;
 }
 
 function cardInnerHTML(item, index) {
@@ -378,7 +384,7 @@ function cardInnerHTML(item, index) {
         </div>
         <button class="counter-btn-big" id="btn-${item.id}" onclick="increment('${item.id}', ${required})"${isDone ? ' disabled' : ''} aria-label="Добавить повторение">+ зикр</button>
         ${required >= 33 ? `<button class="counter-done-btn" id="done-${item.id}" onclick="markCounterDone('${item.id}', ${required})"${isDone ? ' hidden' : ''} aria-label="Отметить прочитанным целиком">прочитано — дальше →</button>` : ''}
-        <div class="swipe-next-hint" id="hint-${item.id}"${isDone ? '' : ' hidden'}>готово ${ICON.check} — листай вправо →</div>
+        <div class="done-hint" id="hint-${item.id}"${isDone ? '' : ' hidden'}>${ICON.check} готово — дальше →</div>
       </div>`;
   } else {
     actionHTML = `
@@ -391,7 +397,7 @@ function cardInnerHTML(item, index) {
   return `
     ${headHTML}
     ${item.note ? `<div class="note">${item.note}</div>` : ''}
-    <div class="arabic">${item.arabic.replace(/\n/g, '<br>')}</div>
+    ${formatArabic(item.arabic)}
     ${item.transliteration ? `<div class="transliteration">${item.transliteration}</div><hr class="divider" />` : ''}
     <div class="translation">${item.translation}</div>
     ${item.source ? `<div class="source">${item.source}</div>` : ''}
@@ -407,7 +413,7 @@ function endCardHTML() {
     const streakHTML = n >= 1
       ? `<div class="end-streak">${ICON.flame} ${n} ${dayWord(n)} подряд</div>`
       : '';
-    return `<div class="card swipe-card end-card enter">
+    return `<div class="card end-card enter">
       <div class="end-icon">${ICON.check}</div>
       <div class="end-title">ма ша Аллах</div>
       <div class="end-sub">все азкары выполнены</div>
@@ -419,7 +425,7 @@ function endCardHTML() {
   }
 
   const left = total - done;
-  return `<div class="card swipe-card end-card enter">
+  return `<div class="card end-card enter">
     <div class="end-icon end-icon-muted">•••</div>
     <div class="end-title">почти готово</div>
     <div class="end-sub">осталось ${left} ${zikrWord(left)}</div>
@@ -478,18 +484,17 @@ function renderCard(index) {
   if (index >= items.length) {
     stack.innerHTML = endCardHTML();
     const endEl = stack.firstElementChild;
-    if (endEl) { attachDrag(endEl); setTimeout(() => endEl.classList.remove('enter'), 450); }
+    if (endEl) { setTimeout(() => endEl.classList.remove('enter'), 450); }
     return;
   }
 
   const item = items[index];
   const card = document.createElement('div');
-  card.className = 'card swipe-card enter';
+  card.className = 'card enter';
   card.id = 'card-' + item.id;
   card.innerHTML = cardInnerHTML(item, index);
   stack.innerHTML = '';
   stack.appendChild(card);
-  attachDrag(card);
   setTimeout(() => card.classList.remove('enter'), 450);
 }
 
@@ -504,12 +509,11 @@ function markReadIfNeeded(item) {
   if (done === total) handleSetCompleted();
 }
 
-function goNext(opts) {
+function goNext() {
   const items = azkar[currentTab];
   if (currentIndex >= items.length) return;
   markReadIfNeeded(items[currentIndex]);
-  const style = opts && opts.swipe ? 'right' : 'genie';
-  animateOut(style, () => {
+  animateOut('genie', () => {
     currentIndex = Math.min(items.length, currentIndex + 1);
     renderCard(currentIndex);
   });
@@ -534,7 +538,7 @@ function restartDeck() {
 }
 
 function animateOut(style, cb) {
-  const el = document.querySelector('.swipe-card');
+  const el = document.querySelector('.card');
   let ran = false;
   const run = () => { if (ran) return; ran = true; cb(); };
   if (!el || reduceMotion) { run(); return; }
@@ -546,71 +550,14 @@ function animateOut(style, cb) {
     return;
   }
 
-  el.classList.add('animating');
+  el.classList.add('slide-out');
   requestAnimationFrame(() => {
-    el.style.transform = style === 'right'
-      ? 'translateX(120%) rotate(10deg)'
-      : 'translateX(-120%) rotate(-10deg)';
+    el.style.transform = style === 'left'
+      ? 'translateX(-120%) rotate(-10deg)' : '';
     el.style.opacity = '0';
   });
   el.addEventListener('transitionend', run, { once: true });
   setTimeout(run, 380);
-}
-
-function snapBack(el) {
-  if (!el) return;
-  el.classList.add('animating');
-  el.style.transform = '';
-  el.style.opacity = '';
-}
-
-function attachDrag(card) {
-  card.addEventListener('pointerdown', onPointerDown);
-}
-
-function onPointerDown(e) {
-  if (e.button != null && e.button !== 0) return;
-  if (e.target.closest('button, a')) return;
-  const card = e.currentTarget;
-  drag = { startX: e.clientX, startY: e.clientY, dx: 0, dy: 0, dir: null, el: card };
-  card.classList.remove('animating');
-  window.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', onPointerUp);
-  window.addEventListener('pointercancel', onPointerUp);
-}
-
-function onPointerMove(e) {
-  if (!drag) return;
-  drag.dx = e.clientX - drag.startX;
-  drag.dy = e.clientY - drag.startY;
-  if (!drag.dir && (Math.abs(drag.dx) > 8 || Math.abs(drag.dy) > 8)) {
-    drag.dir = Math.abs(drag.dx) > Math.abs(drag.dy) ? 'h' : 'v';
-    if (drag.dir === 'h') drag.el.classList.add('dragging');
-  }
-  if (drag.dir === 'h') {
-    const rot = reduceMotion ? 0 : drag.dx / 18;
-    drag.el.style.transform = `translateX(${drag.dx}px) rotate(${rot}deg)`;
-    drag.el.style.opacity = String(Math.max(0.35, 1 - Math.abs(drag.dx) / 700));
-  }
-}
-
-function onPointerUp() {
-  window.removeEventListener('pointermove', onPointerMove);
-  window.removeEventListener('pointerup', onPointerUp);
-  window.removeEventListener('pointercancel', onPointerUp);
-  if (!drag) return;
-  const { dx, dir, el } = drag;
-  const items = azkar[currentTab];
-  if (el) el.classList.remove('dragging');
-  drag = null;
-
-  if (dir === 'h' && dx >= SWIPE_THRESHOLD && currentIndex < items.length) {
-    goNext({ swipe: true });
-  } else if (dir === 'h' && dx <= -SWIPE_THRESHOLD && currentIndex > 0) {
-    goPrev();
-  } else {
-    snapBack(el);
-  }
 }
 
 function increment(id, required) {

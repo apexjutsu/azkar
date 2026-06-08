@@ -270,21 +270,7 @@ header {
   100% { transform: scale(1); }
 }
 
-.swipe-card {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  touch-action: pan-y;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: none;
-  will-change: transform;
-}
-
-.swipe-card:active { cursor: grabbing; }
-.swipe-card.dragging { transition: none; }
-.swipe-card.animating { transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.32s ease; }
+.slide-out { transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.32s ease; }
 
 /* ── Card head: diamond number + pill ── */
 .card-head {
@@ -359,6 +345,11 @@ header {
   font-feature-settings: "liga" 1, "calt" 1;
   word-spacing: 0.05em;
   margin-bottom: 16px;
+}
+.arabic-prefix {
+  text-align: center;
+  font-size: calc(1.2rem * var(--arabic-scale, 1));
+  margin-bottom: 6px;
 }
 
 /* ── Divider ── */
@@ -474,7 +465,7 @@ header {
   cursor: default;
 }
 
-.swipe-next-hint {
+.done-hint {
   margin-top: 10px;
   text-align: center;
   font-size: 0.78rem;
@@ -544,12 +535,6 @@ header {
   letter-spacing: 0.06em;
 }
 
-.swipe-hint {
-  text-align: center;
-  font-size: 0.72rem;
-  color: var(--text-3);
-  padding: 4px 20px 18px;
-}
 
 /* ── Celebration ── */
 .celebration {
@@ -1132,7 +1117,7 @@ body.hide-translit .transliteration + .divider {
 .read-next-btn { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .read-next-btn .ico-svg { width: 1.05em; height: 1.05em; vertical-align: middle; }
 
-.swipe-next-hint { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.done-hint { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .completion-streak,
 .end-streak { display: flex; align-items: center; justify-content: center; gap: 5px; }
 
@@ -1170,7 +1155,7 @@ body.hide-translit .transliteration + .divider {
 }
 
 /* ── Genie / parachute dismiss (forward via button / arrow / auto) ── */
-.swipe-card.genie-out {
+.genie-out {
   animation: genieOut 0.55s cubic-bezier(0.45, 0, 0.75, 0.3) forwards;
   pointer-events: none;
   z-index: 2;
